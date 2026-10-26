@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .rendering-pixelated {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Global mobile viewport & touch rules */
+html, body, #root {
+  height: 100dvh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  background-color: #070611;
+}
+
+/* Safe area support for mobile landscape (notch/camera) */
+.safe-area-pad {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+@keyframes rotate-device {
+  0%, 15% {
+    transform: rotate(0deg);
+  }
+  35%, 65% {
+    transform: rotate(-90deg);
+  }
+  85%, 100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-rotate-phone {
+  animation: rotate-device 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Show rotation overlay strictly on mobile devices in portrait orientation (<= 900px wide and portrait) */
+@media screen and (orientation: landscape) {
+  .rotate-device-overlay {
+    display: none !important;
+  }
+}
+
+@media screen and (min-width: 901px) {
+  .rotate-device-overlay {
+    display: none !important;
+  }
+}
+
+/* Accessibility: Respect user prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Modo Leve (Low Power Mode): Disables heavy filters, blurs, and shadows on weak devices */
+.low-power-mode * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.low-power-mode .sparkles-bg {
+  display: none !important;
+}
+
+.low-power-mode .animate-pulse,
+.low-power-mode .animate-bounce {
+  animation: none !important;
+}
+
+/* Custom scrollbars for dark velvet theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090814;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2444;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ecc13b;
+}
