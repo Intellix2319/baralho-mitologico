@@ -17,16 +17,28 @@ export const ChipsModal: React.FC<ChipsModalProps> = ({
   currentChips,
   onAddChips
 }) => {
+  const [lastClaim, setLastClaim] = React.useState<{ amount: number; label: string; id: number } | null>(null);
+
+  React.useEffect(() => {
+    if (!lastClaim) return;
+    const t = setTimeout(() => setLastClaim(null), 2200);
+    return () => clearTimeout(t);
+  }, [lastClaim]);
+
   if (!isOpen) return null;
 
   const handleClaim = (amount: number, label: string) => {
-    playSound('chime');
-    confetti({
-      particleCount: 60,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
+    // 1º atualiza o saldo (nada pode atrasar isso); som e confete vêm depois e não podem travar
     onAddChips(amount);
+    setLastClaim({ amount, label, id: Date.now() });
+    setTimeout(() => {
+      try {
+        playSound('chime');
+        confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+      } catch (e) {
+        console.error(e);
+      }
+    }, 0);
   };
 
   const PACKAGES = [
@@ -110,6 +122,14 @@ export const ChipsModal: React.FC<ChipsModalProps> = ({
               </div>
               <div className="text-2xl font-black text-amber-300 font-mono">
                 {currentChips.toLocaleString()} <span className="text-xs text-amber-400/80 font-sans">FICHAS</span>
+                {lastClaim && (
+                  <span
+                    key={lastClaim.id}
+                    className="ml-2 text-sm font-black text-emerald-400 animate-bounce"
+                  >
+                    +{lastClaim.amount.toLocaleString()}
+                  </span>
+                )}
               </div>
             </div>
           </div>
