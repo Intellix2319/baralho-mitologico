@@ -1,440 +1,441 @@
-import React, { useState } from 'react';
-import { MultiplayerRoom, AIDifficulty } from '../types/deck';
+import React, { useEffect, useRef, useState } from 'react';
 import { playSound } from '../utils/audio';
+import { GAME_RULES_DATABASE } from '../data/gameRulesData';
+import {
+  onlineRoom,
+  useOnlineRoom,
+  inviteLink,
+  normalizeCode,
+  getSavedName,
+  saveName,
+  ONLINE_READY_GAMES
+} from '../online/room';
 import {
   Users,
   PlusCircle,
   KeyRound,
-  Share2,
   Copy,
   Check,
-  Bot,
-  User,
-  Shield,
+  Crown,
+  Send,
+  Link2,
   MessageCircle,
-  Sparkles,
+  LogOut,
+  Loader2,
   PlayCircle,
-  Coins
+  AlertTriangle
 } from 'lucide-react';
 
 interface MultiplayerLobbyProps {
-  onJoinRoom: (room: MultiplayerRoom) => void;
+  /** código vindo do link de convite (?sala=XXXXX) */
+  initialJoinCode?: string | null;
+  /** jogo escolhido no botão "Jogar Online" do salão */
+  presetGame?: { gameId: string; playerCount: number } | null;
+  /** chamado quando o anfitrião inicia uma partida de um jogo já sincronizado */
+  onStartOnlineGame: (gameId: string, playerCount: number) => void;
 }
 
-const PUBLIC_ROOMS_MOCK: MultiplayerRoom[] = [
-  {
-    code: 'OLYMP-1',
-    name: 'Mesa Aberta de Poker Hold\'em',
-    gameId: 'poker',
-    gameName: 'Poker Texas Hold\'em',
-    hostName: 'Zeus_BR',
-    maxPlayers: 6,
-    currentPlayers: 4,
-    isPrivate: false,
-    stakes: '$50 / $100',
-    aiFilled: true,
-    aiDifficulty: 'intermediate'
-  },
-  {
-    code: 'TRUCO-7',
-    name: 'Truco Paulista da Madrugada',
-    gameId: 'truco_paulista',
-    gameName: 'Truco Paulista',
-    hostName: 'Mineiro_Raiz',
-    maxPlayers: 4,
-    currentPlayers: 3,
-    isPrivate: false,
-    stakes: 'Valendo 12 Tentos',
-    aiFilled: true,
-    aiDifficulty: 'advanced'
-  },
-  {
-    code: 'BLACK-9',
-    name: 'Cassino 21 VIP',
-    gameId: 'blackjack',
-    gameName: 'Blackjack 21',
-    hostName: 'Atena_Strategist',
-    maxPlayers: 5,
-    currentPlayers: 2,
-    isPrivate: false,
-    stakes: '$25 Mínimo',
-    aiFilled: true,
-    aiDifficulty: 'intermediate'
-  }
-];
+const SOLO_GAMES = ['solitaire_klondike', 'freecell', 'spider'];
+const ONLINE_GAMES = GAME_RULES_DATABASE.filter((g) => !SOLO_GAMES.includes(g.id));
 
-export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ onJoinRoom }) => {
-  const [rooms, setRooms] = useState<MultiplayerRoom[]>(PUBLIC_ROOMS_MOCK);
-  const [createdRoom, setCreatedRoom] = useState<MultiplayerRoom | null>(null);
-  const [copiedCode, setCopiedCode] = useState(false);
-  const [joinCodeInput, setJoinCodeInput] = useState('');
-  const [activeTab, setActiveTab] = useState<'public' | 'create' | 'join'>('public');
+export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
+  initialJoinCode,
+  presetGame,
+  onStartOnlineGame
+}) => {
+  const room = useOnlineRoom();
 
-  // New Room Form
-  const [newRoomName, setNewRoomName] = useState('Minha Sala com Amigos');
-  const [selectedGame, setSelectedGame] = useState('poker');
-  const [maxPlayers, setMaxPlayers] = useState(4);
-  const [isPrivate, setIsPrivate] = useState(true);
-  const [aiFilled, setAiFilled] = useState(true);
-  const [aiDifficulty, setAiDifficulty] = useState<AIDifficulty>('intermediate');
+  const [tab, setTab] = useState<'create' | 'join'>(initialJoinCode ? 'join' : 'create');
+  const [name, setName] = useState(getSavedName());
+  const [roomName, setRoomName] = useState('Mesa dos amigos');
+  const [gameId, setGameId] = useState(presetGame?.gameId || 'poker');
+  const [maxPlayers, setMaxPlayers] = useState(
+    presetGame ? Math.max(2, Math.min(6, presetGame.playerCount)) : 4
+  );
+  const [joinCode, setJoinCode] = useState(initialJoinCode ? normalizeCode(initialJoinCode) : '');
+  const [chatText, setChatText] = useState('');
+  const [copied, setCopied] = useState<'code' | 'link' | null>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const handleCreateRoom = (e: React.FormEvent) => {
-    e.preventDefault();
-    playSound('chime');
-    const randomCode = `OLYMP-${Math.floor(100 + Math.random() * 900)}`;
-
-    const gameNameMap: Record<string, string> = {
-      poker: "Poker Texas Hold'em",
-      blackjack: 'Blackjack 21',
-      truco: 'Truco Paulista',
-      solitaire: 'Paciência'
-    };
-
-    const newRoom: MultiplayerRoom = {
-      code: randomCode,
-      name: newRoomName,
-      gameId: selectedGame,
-      gameName: gameNameMap[selectedGame] || 'Poker',
-      hostName: 'Você (Anfitrião)',
-      maxPlayers,
-      currentPlayers: 1,
-      isPrivate,
-      stakes: '$20 / $50',
-      aiFilled,
-      aiDifficulty
-    };
-
-    setCreatedRoom(newRoom);
-    setRooms((prev) => [newRoom, ...prev]);
-  };
-
-  const handleCopyCode = () => {
-    if (!createdRoom) return;
-    playSound('click');
-    navigator.clipboard.writeText(createdRoom.code);
-    setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 2000);
-  };
-
-  const handleShareInvite = () => {
-    if (!createdRoom) return;
-    playSound('click');
-    const text = `Venha jogar cartas comigo na Sala Privada ${createdRoom.name}! Código da sala: ${createdRoom.code}`;
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  };
-
-  const handleJoinWithCode = (e: React.FormEvent) => {
-    e.preventDefault();
-    const found = rooms.find((r) => r.code.toUpperCase() === joinCodeInput.trim().toUpperCase());
-    if (found) {
-      playSound('chime');
-      onJoinRoom(found);
-    } else {
-      // Create ad-hoc room with that code
-      const adhoc: MultiplayerRoom = {
-        code: joinCodeInput.trim().toUpperCase(),
-        name: `Sala ${joinCodeInput}`,
-        gameId: 'poker',
-        gameName: 'Poker Texas Hold\'em',
-        hostName: 'Amigo',
-        maxPlayers: 4,
-        currentPlayers: 2,
-        isPrivate: true,
-        stakes: '$20 / $50',
-        aiFilled: true,
-        aiDifficulty: 'intermediate'
-      };
-      playSound('chime');
-      onJoinRoom(adhoc);
+  // novo link de convite ou novo jogo escolhido no salão
+  useEffect(() => {
+    if (initialJoinCode) {
+      setTab('join');
+      setJoinCode(normalizeCode(initialJoinCode));
     }
+  }, [initialJoinCode]);
+
+  useEffect(() => {
+    if (presetGame) {
+      setTab('create');
+      setGameId(presetGame.gameId);
+      setMaxPlayers(Math.max(2, Math.min(6, presetGame.playerCount)));
+    }
+  }, [presetGame]);
+
+  // o anfitrião iniciou um jogo que já está sincronizado
+  const lastStart = useRef(room.startToken);
+  useEffect(() => {
+    if (room.startToken !== lastStart.current) {
+      lastStart.current = room.startToken;
+      if (room.startedGameId && ONLINE_READY_GAMES.includes(room.startedGameId)) {
+        onStartOnlineGame(room.startedGameId, room.startedCount);
+      }
+    }
+  }, [room.startToken, room.startedGameId, room.startedCount, onStartOnlineGame]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ block: 'end' });
+  }, [room.chat.length]);
+
+  const nameOk = name.trim().length > 0;
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nameOk) return;
+    playSound('chime');
+    saveName(name.trim());
+    const game = ONLINE_GAMES.find((g) => g.id === gameId) || ONLINE_GAMES[0];
+    onlineRoom.createRoom({
+      playerName: name,
+      roomName,
+      gameId: game.id,
+      gameName: game.title,
+      maxPlayers
+    });
   };
 
-  return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 space-y-6">
-      {/* Lobby Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-950/70 via-slate-900/90 to-blue-950/70 border border-purple-500/30 p-5 sm:p-7 shadow-2xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-xs font-semibold mb-2">
-              <Users className="w-3.5 h-3.5" />
-              <span>Salas & Partidas Multijogador</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-wide">
-              Jogue com Amigos ou Partidas Públicas
-            </h1>
-            <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-              Crie uma sala privada, compartilhe o código de convite pelo WhatsApp ou junte-se a mesas públicas. Se faltarem amigos na sala, IAs inteligentes completam as vagas!
-            </p>
-          </div>
+  const handleJoin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nameOk || joinCode.length < 5) return;
+    playSound('chime');
+    saveName(name.trim());
+    onlineRoom.joinRoom(joinCode, name);
+  };
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveTab('create')}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-purple-900/30 active:scale-95 transition-all"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Criar Nova Sala</span>
-            </button>
-          </div>
-        </div>
-      </div>
+  const copy = async (what: 'code' | 'link') => {
+    if (!room.info) return;
+    playSound('click');
+    const text = what === 'code' ? room.info.code : inviteLink(room.info.code);
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {}
+    setCopied(what);
+    setTimeout(() => setCopied(null), 1800);
+  };
 
-      {/* Lobby Navigation Tabs */}
-      <div className="flex border-b border-slate-800 gap-3 text-xs sm:text-sm font-bold">
+  const shareWhatsApp = () => {
+    if (!room.info) return;
+    playSound('click');
+    const text = `Bora jogar ${room.info.gameName} comigo? Entra na sala pelo link: ${inviteLink(room.info.code)} (código ${room.info.code})`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const sendChat = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatText.trim()) return;
+    onlineRoom.sendChat(chatText);
+    setChatText('');
+  };
+
+  const isHost = room.role === 'host';
+  const startReady = room.info ? ONLINE_READY_GAMES.includes(room.info.gameId) : false;
+
+  // ---------------------------------------------------------------- conectando
+  if (room.status === 'connecting') {
+    return (
+      <div className="flex-1 min-h-[60vh] flex flex-col items-center justify-center gap-3 p-6 text-center select-none">
+        <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+        <p className="text-sm font-bold text-slate-200">
+          {room.role === 'host' ? 'Criando a sala...' : 'Entrando na sala...'}
+        </p>
         <button
-          onClick={() => setActiveTab('public')}
-          className={`pb-2.5 px-3 border-b-2 transition-colors flex items-center gap-2 ${
-            activeTab === 'public'
-              ? 'border-purple-400 text-purple-300'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
+          onClick={() => onlineRoom.leave()}
+          className="text-xs text-slate-400 hover:text-white underline cursor-pointer"
         >
-          <Users className="w-4 h-4" />
-          <span>Mesas Públicas ({rooms.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('create')}
-          className={`pb-2.5 px-3 border-b-2 transition-colors flex items-center gap-2 ${
-            activeTab === 'create'
-              ? 'border-purple-400 text-purple-300'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span>Criar Sala Privada</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('join')}
-          className={`pb-2.5 px-3 border-b-2 transition-colors flex items-center gap-2 ${
-            activeTab === 'join'
-              ? 'border-purple-400 text-purple-300'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <KeyRound className="w-4 h-4" />
-          <span>Digitar Código de Convite</span>
+          Cancelar
         </button>
       </div>
+    );
+  }
 
-      {/* Tab 1: Public Rooms */}
-      {activeTab === 'public' && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {rooms.map((room) => (
-              <div
-                key={room.code}
-                className="bg-slate-900/90 border border-slate-800 hover:border-purple-500/50 rounded-2xl p-4 shadow-xl transition-all flex flex-col justify-between"
+  // ---------------------------------------------------------------- dentro da sala
+  if (room.status === 'lobby' && room.info) {
+    return (
+      <div className="max-w-5xl mx-auto w-full p-4 short:p-2 select-none">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 short:gap-2">
+          {/* Sala + jogadores */}
+          <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-b from-emerald-950/40 to-slate-950 p-4 short:p-3 space-y-3 short:space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-[10px] font-mono font-bold uppercase text-emerald-400 tracking-wider">
+                  Código da sala
+                </div>
+                <div className="text-3xl short:text-2xl font-black font-mono tracking-[0.2em] text-amber-300">
+                  {room.info.code}
+                </div>
+                <div className="text-xs text-slate-300 truncate">
+                  {room.info.name} • {room.info.gameName}
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  playSound('click');
+                  onlineRoom.leave();
+                }}
+                className="shrink-0 px-3 py-2 short:py-1.5 rounded-xl bg-slate-900 hover:bg-red-950 border border-slate-700 hover:border-red-500/60 text-slate-300 hover:text-red-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono font-bold bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded border border-purple-400/30">
-                      {room.code}
-                    </span>
-                    <span className="text-xs text-slate-400 flex items-center gap-1 font-mono">
-                      <User className="w-3 h-3" />
-                      <span>
-                        {room.currentPlayers}/{room.maxPlayers}
-                      </span>
-                    </span>
-                  </div>
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sair</span>
+              </button>
+            </div>
 
-                  <h3 className="font-bold text-sm text-white">{room.name}</h3>
-                  <div className="text-xs text-amber-300 font-bold mt-0.5">{room.gameName}</div>
-                  <div className="text-[11px] text-slate-400 mt-2 space-y-1">
-                    <div>Anfitrião: {room.hostName}</div>
-                    <div>Apostas / Limites: {room.stakes}</div>
-                    {room.aiFilled && (
-                      <div className="flex items-center gap-1 text-purple-300">
-                        <Bot className="w-3 h-3" />
-                        <span>IAs preenchem vagas ({room.aiDifficulty})</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => copy('code')}
+                className="px-3 py-2 short:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+              >
+                {copied === 'code' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copied === 'code' ? 'Copiado!' : 'Copiar código'}</span>
+              </button>
+              <button
+                onClick={() => copy('link')}
+                className="px-3 py-2 short:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+              >
+                {copied === 'link' ? <Check className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
+                <span>{copied === 'link' ? 'Copiado!' : 'Copiar link'}</span>
+              </button>
+              <button
+                onClick={shareWhatsApp}
+                className="px-3 py-2 short:py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black flex items-center gap-1.5 cursor-pointer"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Convidar no WhatsApp</span>
+              </button>
+            </div>
 
-                <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
-                  <button
-                    onClick={() => onJoinRoom(room)}
-                    className="w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow transition-colors"
-                  >
-                    <PlayCircle className="w-4 h-4" />
-                    <span>Entrar na Mesa</span>
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: Create Room */}
-      {activeTab === 'create' && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
-          {createdRoom ? (
-            <div className="text-center space-y-4 animate-fadeIn">
-              <div className="w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 flex items-center justify-center mx-auto">
-                <Sparkles className="w-7 h-7" />
-              </div>
-
-              <div>
-                <h3 className="text-lg font-black text-white">Sala Criada com Sucesso!</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Envie o código de convite para seus amigos entrarem na partida:
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-950 border border-amber-500/40 inline-flex items-center gap-3">
-                <span className="font-mono text-xl sm:text-2xl font-black text-amber-300 tracking-wider">
-                  {createdRoom.code}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-emerald-400" />
+                  Jogadores na sala
                 </span>
-                <button
-                  onClick={handleCopyCode}
-                  className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-200 transition-colors"
-                  title="Copiar Código"
-                >
-                  {copiedCode ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                </button>
+                <span className="text-[11px] font-mono font-bold text-emerald-300">
+                  {room.players.length}/{room.info.maxPlayers}
+                </span>
               </div>
+              <ul className="space-y-1">
+                {room.players.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex items-center gap-2 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5 text-xs"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                    <span className="font-bold text-slate-100 truncate">{p.name}</span>
+                    {p.id === room.myId && <span className="text-[10px] text-slate-400">(você)</span>}
+                    {p.isHost && <Crown className="w-3.5 h-3.5 text-amber-400 ml-auto shrink-0" />}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+            {isHost ? (
+              <div className="space-y-2">
                 <button
-                  onClick={handleShareInvite}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow"
-                >
-                  <Share2 className="w-4 h-4" />
-                  <span>Enviar Convite WhatsApp</span>
-                </button>
-
-                <button
-                  onClick={() => onJoinRoom(createdRoom)}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow"
+                  disabled={!startReady}
+                  onClick={() => {
+                    if (!startReady) return;
+                    playSound('chime');
+                    onlineRoom.startGame(room.info!.gameId, room.players.length);
+                  }}
+                  className={`w-full py-2.5 short:py-2 rounded-xl text-xs font-black flex items-center justify-center gap-2 ${
+                    startReady
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 cursor-pointer active:scale-95'
+                      : 'bg-slate-900 text-slate-500 border border-slate-800 cursor-not-allowed'
+                  }`}
                 >
                   <PlayCircle className="w-4 h-4" />
-                  <span>Abrir Mesa Agora</span>
+                  <span>Iniciar partida</span>
                 </button>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleCreateRoom} className="space-y-4">
-              <h3 className="text-base font-black text-white border-b border-slate-800 pb-2">
-                Configurar Nova Sala
-              </h3>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Nome da Mesa</label>
-                <input
-                  type="text"
-                  value={newRoomName}
-                  onChange={(e) => setNewRoomName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-purple-400"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Jogo de Cartas</label>
-                  <select
-                    value={selectedGame}
-                    onChange={(e) => setSelectedGame(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-purple-400"
-                  >
-                    <option value="poker">Poker Texas Hold'em</option>
-                    <option value="truco">Truco Paulista</option>
-                    <option value="blackjack">Blackjack 21</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Vagas de Jogadores</label>
-                  <select
-                    value={maxPlayers}
-                    onChange={(e) => setMaxPlayers(parseInt(e.target.value, 10))}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-purple-400"
-                  >
-                    <option value={2}>2 Jogadores (Mano a Mano)</option>
-                    <option value={4}>4 Jogadores (Padrão Truco/Poker)</option>
-                    <option value={6}>6 Jogadores (Mesa Cheia)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={aiFilled}
-                    onChange={(e) => setAiFilled(e.target.checked)}
-                    className="rounded text-purple-600 focus:ring-0"
-                  />
-                  <span className="text-xs font-bold text-slate-200">
-                    Completar vagas vazias com IAs inteligentes
-                  </span>
-                </label>
-
-                {aiFilled && (
-                  <div className="flex items-center gap-2 pt-1 pl-5">
-                    <span className="text-[11px] text-slate-400 font-bold">Dificuldade da IA:</span>
-                    {(['beginner', 'intermediate', 'advanced'] as AIDifficulty[]).map((d) => (
-                      <button
-                        type="button"
-                        key={d}
-                        onClick={() => setAiDifficulty(d)}
-                        className={`text-[11px] px-2 py-0.5 rounded font-bold capitalize transition-colors ${
-                          aiDifficulty === d
-                            ? 'bg-purple-600 text-white'
-                            : 'bg-slate-800 text-slate-400 hover:text-white'
-                        }`}
-                      >
-                        {d === 'beginner' ? 'Iniciante' : d === 'intermediate' ? 'Médio' : 'Avançado'}
-                      </button>
-                    ))}
+                {!startReady && (
+                  <div className="flex gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 p-2.5 text-[11px] text-amber-200 leading-snug">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+                    <span>
+                      A sala e a conexão já são reais. Este jogo ainda não está sincronizado entre os
+                      celulares (vem nas próximas etapas). Por enquanto, use o chat para testar se
+                      todo mundo está conectado.
+                    </span>
                   </div>
                 )}
               </div>
+            ) : (
+              <p className="text-[11px] text-slate-400 text-center">
+                Aguardando o anfitrião iniciar a partida...
+              </p>
+            )}
+          </div>
 
+          {/* Chat */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/90 p-3 short:p-2 flex flex-col min-h-[240px] short:min-h-[200px] max-h-[60vh] short:max-h-[300px]">
+            <div className="text-[11px] font-bold text-slate-300 mb-2 flex items-center gap-1.5">
+              <MessageCircle className="w-3.5 h-3.5 text-amber-400" />
+              Chat da sala
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
+              {room.chat.map((m) =>
+                m.system ? (
+                  <div key={m.id} className="text-[10px] text-center text-slate-500 font-mono">
+                    {m.text}
+                  </div>
+                ) : (
+                  <div key={m.id} className="text-xs">
+                    <span className="font-black text-amber-300">{m.from}: </span>
+                    <span className="text-slate-200 break-words">{m.text}</span>
+                  </div>
+                )
+              )}
+              <div ref={chatEndRef} />
+            </div>
+            <form onSubmit={sendChat} className="mt-2 flex gap-2">
+              <input
+                value={chatText}
+                onChange={(e) => setChatText(e.target.value)}
+                maxLength={300}
+                placeholder="Escreva uma mensagem..."
+                className="flex-1 min-w-0 bg-slate-900 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-2 short:py-1.5 text-xs text-white outline-none select-text"
+              />
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white font-black text-sm shadow-xl active:scale-95 transition-all"
+                className="px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer active:scale-95"
+                title="Enviar"
               >
-                Criar Sala & Gerar Convite
+                <Send className="w-4 h-4" />
               </button>
             </form>
-          )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------------- criar / entrar
+  const fieldClass =
+    'w-full bg-slate-900 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-2.5 short:py-1.5 text-sm text-white outline-none select-text [&>option]:bg-slate-900';
+
+  return (
+    <div className="max-w-xl mx-auto w-full p-4 short:p-2 select-none">
+      {(room.status === 'error' || room.status === 'closed') && room.error && (
+        <div className="mb-3 flex gap-2 rounded-xl border border-red-500/50 bg-red-950/40 p-3 text-xs text-red-200">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
+          <span>{room.error}</span>
         </div>
       )}
 
-      {/* Tab 3: Join Room */}
-      {activeTab === 'join' && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl max-w-md mx-auto text-center">
-          <KeyRound className="w-10 h-10 text-purple-400 mx-auto mb-2" />
-          <h3 className="text-base font-black text-white">Entrar com Código</h3>
-          <p className="text-xs text-slate-400 mt-1 mb-4">
-            Digite o código de 6 dígitos que seu amigo compartilhou (ex: OLYMP-482):
-          </p>
+      <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-b from-slate-900 to-slate-950 p-4 short:p-3 space-y-3 short:space-y-2">
+        <div className="flex items-center gap-2">
+          <Users className="w-5 h-5 text-emerald-400" />
+          <h2 className="text-base font-black text-amber-100">Jogar online com amigos</h2>
+        </div>
 
-          <form onSubmit={handleJoinWithCode} className="space-y-3">
-            <input
-              type="text"
-              placeholder="Ex: OLYMP-123"
-              value={joinCodeInput}
-              onChange={(e) => setJoinCodeInput(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-center font-mono font-bold text-sm text-amber-300 placeholder-slate-600 focus:outline-none focus:border-purple-400 uppercase tracking-widest"
-              required
-            />
+        <div>
+          <label className="block text-[11px] font-bold text-slate-300 mb-1">Seu nome</label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={20}
+            placeholder="Como os amigos vão te ver"
+            className={fieldClass}
+          />
+        </div>
 
+        <div className="grid grid-cols-2 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <button
+            onClick={() => setTab('create')}
+            className={`py-2 short:py-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer ${
+              tab === 'create' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            Criar sala
+          </button>
+          <button
+            onClick={() => setTab('join')}
+            className={`py-2 short:py-1.5 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer ${
+              tab === 'join' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <KeyRound className="w-3.5 h-3.5" />
+            Entrar com código
+          </button>
+        </div>
+
+        {tab === 'create' ? (
+          <form onSubmit={handleCreate} className="space-y-3 short:space-y-2">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-300 mb-1">Nome da sala</label>
+              <input
+                value={roomName}
+                onChange={(e) => setRoomName(e.target.value)}
+                maxLength={40}
+                className={fieldClass}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-300 mb-1">Jogo</label>
+                <select value={gameId} onChange={(e) => setGameId(e.target.value)} className={fieldClass}>
+                  {ONLINE_GAMES.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-300 mb-1">Máx. de jogadores</label>
+                <select
+                  value={maxPlayers}
+                  onChange={(e) => setMaxPlayers(Number(e.target.value))}
+                  className={fieldClass}
+                >
+                  {[2, 3, 4, 5, 6].map((n) => (
+                    <option key={n} value={n}>
+                      {n} jogadores
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs sm:text-sm shadow-lg active:scale-95 transition-all"
+              disabled={!nameOk}
+              className="w-full py-3 short:py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white text-sm font-black cursor-pointer disabled:cursor-not-allowed active:scale-95"
             >
-              Entrar na Partida
+              Criar sala
             </button>
           </form>
-        </div>
-      )}
+        ) : (
+          <form onSubmit={handleJoin} className="space-y-3 short:space-y-2">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-300 mb-1">Código da sala</label>
+              <input
+                value={joinCode}
+                onChange={(e) => setJoinCode(normalizeCode(e.target.value))}
+                placeholder="Ex.: K7P2Q"
+                autoCapitalize="characters"
+                className={`${fieldClass} font-mono tracking-[0.3em] text-center text-lg uppercase`}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={!nameOk || joinCode.length < 5}
+              className="w-full py-3 short:py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-slate-950 text-sm font-black cursor-pointer disabled:cursor-not-allowed active:scale-95"
+            >
+              Entrar na sala
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 };

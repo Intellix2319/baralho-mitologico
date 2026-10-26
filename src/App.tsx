@@ -228,8 +228,29 @@ export default function App() {
     setIsGameActive(true);
   };
 
-  const handleJoinMultiplayerRoom = (room: MultiplayerRoom) => {
-    setSelectedGameForPlay(room.gameId);
+  // Sala online: link de convite (?sala=CODIGO) e jogo escolhido no salão
+  const [joinCodeFromLink, setJoinCodeFromLink] = useState<string | null>(null);
+  const [onlinePreset, setOnlinePreset] = useState<{ gameId: string; playerCount: number } | null>(null);
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('sala');
+      if (code) {
+        setJoinCodeFromLink(code);
+        setActiveTab('multiplayer');
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    } catch {}
+  }, []);
+
+  const handleOpenOnlineRoom = (gameId: string, playerCount: number) => {
+    setOnlinePreset({ gameId, playerCount });
+    setActiveTab('multiplayer');
+  };
+
+  const handleStartOnlineGame = (gameId: string, _playerCount: number) => {
+    setSelectedGameForPlay(gameId);
     setActiveTab('play');
   };
 
@@ -446,6 +467,7 @@ export default function App() {
                   playSound('click');
                   setActiveTab('academy');
                 }}
+                onOpenOnlineRoom={handleOpenOnlineRoom}
               />
             )}
 
@@ -457,7 +479,11 @@ export default function App() {
             {/* TAB 3: MULTIPLAYER LOBBY */}
             {activeTab === 'multiplayer' && (
               <div className="flex-1 min-h-0 overflow-y-auto">
-                <MultiplayerLobby onJoinRoom={handleJoinMultiplayerRoom} />
+                <MultiplayerLobby
+                  initialJoinCode={joinCodeFromLink}
+                  presetGame={onlinePreset}
+                  onStartOnlineGame={handleStartOnlineGame}
+                />
               </div>
             )}
 

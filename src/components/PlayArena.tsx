@@ -61,7 +61,6 @@ import {
   Bot,
   Share2
 } from 'lucide-react';
-import { OnlineRoomModal } from './OnlineRoomModal';
 
 import rawCardsData from '../cards_data.json';
 import { CardData, CustomDeck } from '../types/deck';
@@ -82,6 +81,7 @@ const DEFAULT_DECK: CustomDeck = {
 interface PlayArenaProps {
   initialGame?: string | null;
   onOpenAcademy?: () => void;
+  onOpenOnlineRoom?: (gameId: string, playerCount: number) => void;
   allCards?: CardData[];
   activeDeck?: CustomDeck;
   onInspectCard?: (card: CardData) => void;
@@ -192,6 +192,7 @@ const DEFAULT_GAME_PLAYER_COUNTS: Record<string, number> = {
 export const PlayArena: React.FC<PlayArenaProps> = ({
   initialGame = null,
   onOpenAcademy,
+  onOpenOnlineRoom,
   allCards = allDeckCards,
   activeDeck = DEFAULT_DECK,
   onInspectCard = () => {},
@@ -215,14 +216,7 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
   // Player count selection for every game
   const [gamePlayerCounts, setGamePlayerCounts] = useState<Record<string, number>>(DEFAULT_GAME_PLAYER_COUNTS);
 
-  // Online multiplayer room modal & active session state
-  const [onlineModalConfig, setOnlineModalConfig] = useState<{
-    isOpen: boolean;
-    gameId: string;
-    gameTitle: string;
-    playerCount: number;
-  } | null>(null);
-
+  // Sessão da partida atual (o modo online de verdade passa pela aba Multijogador)
   const [onlineSession, setOnlineSession] = useState<{
     mode: 'solo' | 'online';
     roomCode: string;
@@ -234,19 +228,9 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
     setActiveGame(gameId);
   };
 
-  const handleOpenOnlineModal = (gameId: string, gameTitle: string, playerCount: number) => {
+  const handleOpenOnlineModal = (gameId: string, _gameTitle: string, playerCount: number) => {
     playSound('click');
-    setOnlineModalConfig({
-      isOpen: true,
-      gameId,
-      gameTitle,
-      playerCount
-    });
-  };
-
-  const handleStartFromModal = (gameId: string, mode: 'solo' | 'online', roomCode: string) => {
-    setOnlineSession({ mode, roomCode });
-    setActiveGame(gameId);
+    onOpenOnlineRoom?.(gameId, playerCount);
   };
 
   const handleBackToHub = () => {
@@ -486,53 +470,6 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
           </div>
         </div>
 
-        {/* Live Online Players Presence & Quick Lobby Register */}
-        <div className="shrink-0 mb-4 bg-gradient-to-r from-emerald-950/60 via-slate-900 to-slate-950 p-3 sm:p-4 short:p-2 short:mb-2 rounded-2xl border border-emerald-500/40 shadow-xl flex flex-col md:flex-row short:flex-row items-stretch md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0">
-              <Wifi className="w-5 h-5 text-emerald-400 animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs sm:text-sm font-black text-white">
-                  Jogadores Conectados no Site Agora
-                </span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-black border border-emerald-500/40 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  7 ONLINE
-                </span>
-              </div>
-              <p className="short:hidden text-[11px] text-slate-300">
-                Escolha jogar sozinho contra a IA ou crie uma mesa online para jogar com seus amigos!
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto py-1 min-w-0">
-            {[
-              { name: 'Mineiro_Raiz', avatar: '🤠', status: 'disponivel' },
-              { name: 'Zeus_BR', avatar: '⚡', status: 'disponivel' },
-              { name: 'Atena', avatar: '🦉', status: 'disponivel' },
-              { name: 'Carioca', avatar: '🌊', status: 'disponivel' },
-              { name: 'Gaucho', avatar: '🧉', status: 'jogando' }
-            ].map((p, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 px-2.5 py-1 rounded-xl text-xs shrink-0"
-                title={`${p.name} - ${p.status === 'jogando' ? 'Em Partida' : 'Disponível'}`}
-              >
-                <span className="text-sm">{p.avatar}</span>
-                <span className="text-[11px] font-bold text-slate-200">{p.name}</span>
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    p.status === 'jogando' ? 'bg-amber-400' : 'bg-emerald-400'
-                  }`}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Filter Pills & Search */}
         <div className="shrink-0 mb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 short:mb-2 short:p-1.5 bg-slate-900/90 p-2 sm:p-2.5 rounded-2xl border border-slate-800 shadow">
           {/* Category Tabs */}
@@ -694,18 +631,6 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
             );
           })}
         </div>
-
-        {/* Online Room Modal in Hub */}
-        {onlineModalConfig && (
-          <OnlineRoomModal
-            isOpen={onlineModalConfig.isOpen}
-            onClose={() => setOnlineModalConfig(null)}
-            gameId={onlineModalConfig.gameId}
-            gameTitle={onlineModalConfig.gameTitle}
-            playerCount={onlineModalConfig.playerCount}
-            onStartGame={handleStartFromModal}
-          />
-        )}
       </div>
     );
   }
