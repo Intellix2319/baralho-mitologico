@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
+import { useOnlineRoom } from './online/room';
 import rawCardsData from './cards_data.json';
 import { CardData, CustomDeck, ViewTab, MultiplayerRoom } from './types/deck';
 import { CardItem } from './components/CardItem';
@@ -243,6 +244,17 @@ export default function App() {
       }
     } catch {}
   }, []);
+
+  // Quando a partida online termina (anfitrião encerrou, saiu ou a sala caiu), volta para a sala
+  const onlineRoomState = useOnlineRoom();
+  const wasGameActive = useRef(false);
+  useEffect(() => {
+    if (wasGameActive.current && !onlineRoomState.gameActive) {
+      setSelectedGameForPlay(null);
+      setActiveTab('multiplayer');
+    }
+    wasGameActive.current = onlineRoomState.gameActive;
+  }, [onlineRoomState.gameActive]);
 
   const handleOpenOnlineRoom = (gameId: string, playerCount: number) => {
     setOnlinePreset({ gameId, playerCount });

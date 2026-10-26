@@ -24,7 +24,7 @@ const JOIN_TIMEOUT_MS = 15000;
 const MAX_CHAT = 100;
 
 /** Jogos já sincronizados entre os celulares. Cada etapa nova acrescenta o id do jogo aqui. */
-export const ONLINE_READY_GAMES: string[] = [];
+export const ONLINE_READY_GAMES: string[] = ['truco_paulista', 'truco_mineiro', 'poker', 'blackjack'];
 
 export interface RoomPlayer {
   id: string;
@@ -61,6 +61,7 @@ export interface RoomState {
   startToken: number; // aumenta a cada "Iniciar partida"
   startedGameId: string | null;
   startedCount: number;
+  gameActive: boolean; // há uma partida em andamento na sala
 }
 
 const INITIAL_STATE: RoomState = {
@@ -73,7 +74,8 @@ const INITIAL_STATE: RoomState = {
   error: null,
   startToken: 0,
   startedGameId: null,
-  startedCount: 0
+  startedCount: 0,
+  gameActive: false
 };
 
 export interface CreateRoomOptions {
@@ -430,8 +432,21 @@ export class OnlineRoom {
   startGame(gameId: string, playerCount: number) {
     if (this.state.role !== 'host' || this.state.status !== 'lobby') return;
     const token = this.state.startToken + 1;
-    this.set({ startToken: token, startedGameId: gameId, startedCount: playerCount });
+    this.set({ startToken: token, startedGameId: gameId, startedCount: playerCount, gameActive: true });
     this.broadcast({ t: 'start', gameId, count: playerCount, token });
+  }
+
+  /** Anfitrião encerra a partida: todos voltam para a sala. */
+  endGame() {
+    if (this.state.role !== 'host' || this.state.status !== 'lobby') return;
+    this.set({ gameActive: false });
+    this.broadcast({ t: 'end' });
+  }
+
+  /** Anfitrião -> um jogador específico (cada um recebe só o que pode ver). */
+  sendToPlayer(playerId: string, payload: any) {
+    if (this.state.role !== 'host') return;
+    this.safeSend(this.conns.get(playerId), { t: 'game', payload });
   }
 
   // ---------- convidado ----------
@@ -525,7 +540,15 @@ export class OnlineRoom {
         if (msg.msg) this.pushChat(msg.msg);
         break;
       case 'start':
-        this.set({ startToken: msg.token || this.state.startToken + 1, startedGameId: msg.gameId, startedCount: msg.count });
+        this.set({
+          startToken: msg.token || this.state.startToken + 1,
+          startedGameId: msg.gameId,
+          startedCount: msg.count,
+          gameActive: true
+        });
+        break;
+      case 'end':
+        this.set({ gameActive: false });
         break;
       case 'game':
         this.gameHandlers.forEach((h) => h('host', msg.payload));

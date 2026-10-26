@@ -261,9 +261,8 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
                   <div className="flex gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 p-2.5 text-[11px] text-amber-200 leading-snug">
                     <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
                     <span>
-                      A sala e a conexão já são reais. Este jogo ainda não está sincronizado entre os
-                      celulares (vem nas próximas etapas). Por enquanto, use o chat para testar se
-                      todo mundo está conectado.
+                      Este jogo ainda não está disponível online. Já funcionam online: Truco Paulista,
+                      Truco Mineiro, Poker e Blackjack. Escolha um deles ao criar a sala.
                     </span>
                   </div>
                 )}

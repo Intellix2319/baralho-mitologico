@@ -1,5 +1,6 @@
 import React, { useState, useMemo, Suspense } from 'react';
 import { TrucoVariant } from './games/TrucoGame';
+import { useOnlineRoom } from '../online/room';
 import { GAME_RULES_DATABASE } from '../data/gameRulesData';
 import { playSound } from '../utils/audio';
 
@@ -15,6 +16,15 @@ const TrucoGame = React.lazy(() =>
 );
 const SolitaireGame = React.lazy(() =>
   import('./games/SolitaireGame').then((m) => ({ default: m.SolitaireGame }))
+);
+const TrucoOnline = React.lazy(() =>
+  import('./games/TrucoOnline').then((m) => ({ default: m.TrucoOnline }))
+);
+const PokerOnline = React.lazy(() =>
+  import('./games/PokerOnline').then((m) => ({ default: m.PokerOnline }))
+);
+const BlackjackOnline = React.lazy(() =>
+  import('./games/BlackjackOnline').then((m) => ({ default: m.BlackjackOnline }))
 );
 const GenericCardGameArena = React.lazy(() =>
   import('./games/GenericCardGameArena').then((m) => ({ default: m.GenericCardGameArena }))
@@ -198,6 +208,7 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
   onInspectCard = () => {},
   onGameActiveChange
 }) => {
+  const room = useOnlineRoom();
   const [activeGame, setActiveGame] = useState<string | null>(initialGame);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -656,8 +667,18 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
         </div>
       )}
       <Suspense fallback={<GameLoadingFallback name={activeGame || 'Mesa'} />}>
+        {/* PARTIDAS ONLINE (sala com amigos): mesa compartilhada */}
+        {room.gameActive && room.status === 'lobby' && room.startedGameId === activeGame ? (
+          <>
+            {activeGame === 'poker' && <PokerOnline />}
+            {activeGame === 'blackjack' && <BlackjackOnline />}
+            {(activeGame === 'truco_paulista' || activeGame === 'truco') && <TrucoOnline variant="paulista" />}
+            {activeGame === 'truco_mineiro' && <TrucoOnline variant="mineiro" />}
+          </>
+        ) : null}
+
         {/* POKER */}
-        {activeGame === 'poker' && (
+        {!(room.gameActive && room.status === 'lobby' && room.startedGameId === activeGame) && activeGame === 'poker' && (
           <PokerGame
             playerCount={gamePlayerCounts['poker'] || 6}
             onBack={handleBackToHub}
@@ -665,7 +686,7 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
         )}
 
         {/* TRUCO (Paulista, Mineiro, Gaúcho, Variações) */}
-        {(activeGame === 'truco' || activeGame.startsWith('truco_')) && (
+        {!(room.gameActive && room.status === 'lobby' && room.startedGameId === activeGame) && (activeGame === 'truco' || activeGame.startsWith('truco_')) && (
           <TrucoGame
             playerCount={gamePlayerCounts[activeGame] || 4}
             initialVariant={activeGame.includes('mineiro') ? 'mineiro' : 'paulista'}
@@ -674,7 +695,7 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
         )}
 
         {/* BLACKJACK 21 */}
-        {activeGame === 'blackjack' && (
+        {!(room.gameActive && room.status === 'lobby' && room.startedGameId === activeGame) && activeGame === 'blackjack' && (
           <BlackjackGame
             spotCount={gamePlayerCounts['blackjack'] || 3}
             onBack={handleBackToHub}
