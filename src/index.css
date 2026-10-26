@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Celular deitado (paisagem): tela baixa. Use "short:" nas classes para compactar o layout. */
+@custom-variant short (@media (max-height: 520px));
+
 @layer utilities {
   .rendering-pixelated {
     image-rendering: pixelated;
@@ -11,7 +14,7 @@
 /* Global mobile viewport & touch rules */
 html, body, #root {
   height: 100dvh;
-  width: 100vw;
+  width: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;

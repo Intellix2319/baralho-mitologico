@@ -449,27 +449,27 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
   // 1. GAME SELECTION HUB / SALÃO DE JOGOS (When no active game is selected)
   if (!activeGame) {
     return (
-      <div className="flex-1 min-h-0 flex flex-col overflow-y-auto max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 select-none">
+      <div className="flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 short:px-2 short:py-2 select-none">
         {/* Hub Header */}
-        <div className="shrink-0 mb-4 bg-gradient-to-r from-[#181105] via-[#100b1a] to-[#0c1524] border border-amber-500/30 rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-black uppercase tracking-wider mb-2 border border-amber-500/40">
+        <div className="shrink-0 mb-4 bg-gradient-to-r from-[#181105] via-[#100b1a] to-[#0c1524] border border-amber-500/30 rounded-3xl short:rounded-2xl p-4 sm:p-6 short:p-3 shadow-2xl flex flex-col md:flex-row short:flex-row short:flex-wrap items-start md:items-center justify-between gap-4 short:gap-2 short:mb-2">
+          <div className="min-w-0 flex-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 short:py-0.5 short:text-[10px] rounded-full bg-amber-500/20 text-amber-300 text-xs font-black uppercase tracking-wider mb-2 short:mb-1 border border-amber-500/40">
               <Dices className="w-4 h-4 text-amber-400" />
               <span>Salão Oficial de Jogos de Cartas ({GAME_RULES_DATABASE.length} Modalidades)</span>
             </div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-amber-100 tracking-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl short:text-lg font-black text-amber-100 tracking-tight">
               Escolha seu Jogo & Mesa
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+            <p className="short:hidden text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
               Todos os jogos da Academia de Regras disponíveis com temas visuais exclusivos, IA, multiplayer e regras completas.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 short:gap-1.5">
             {onOpenAcademy && (
               <button
                 onClick={onOpenAcademy}
-                className="px-4 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-amber-300 hover:text-white font-bold text-xs border border-amber-500/40 flex items-center gap-2 transition-all shadow-md cursor-pointer shrink-0"
+                className="px-4 py-2.5 short:px-3 short:py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-amber-300 hover:text-white font-bold text-xs border border-amber-500/40 flex items-center gap-2 transition-all shadow-md cursor-pointer shrink-0"
               >
                 <BookOpen className="w-4 h-4 text-amber-400" />
                 <span>Ver Manual de Regras</span>
@@ -478,7 +478,7 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
 
             <button
               onClick={() => handleLaunchGame('tabletop')}
-              className="px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/40 flex items-center gap-1.5 transition-all shadow cursor-pointer shrink-0"
+              className="px-4 py-2.5 short:px-3 short:py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/40 flex items-center gap-1.5 transition-all shadow cursor-pointer shrink-0"
             >
               <LayoutGrid className="w-4 h-4" />
               <span>Mesa Sandbox</span>
@@ -487,7 +487,7 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
         </div>
 
         {/* Live Online Players Presence & Quick Lobby Register */}
-        <div className="shrink-0 mb-4 bg-gradient-to-r from-emerald-950/60 via-slate-900 to-slate-950 p-3 sm:p-4 rounded-2xl border border-emerald-500/40 shadow-xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="shrink-0 mb-4 bg-gradient-to-r from-emerald-950/60 via-slate-900 to-slate-950 p-3 sm:p-4 short:p-2 short:mb-2 rounded-2xl border border-emerald-500/40 shadow-xl flex flex-col md:flex-row short:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0">
               <Wifi className="w-5 h-5 text-emerald-400 animate-pulse" />
@@ -502,13 +502,13 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
                   7 ONLINE
                 </span>
               </div>
-              <p className="text-[11px] text-slate-300">
+              <p className="short:hidden text-[11px] text-slate-300">
                 Escolha jogar sozinho contra a IA ou crie uma mesa online para jogar com seus amigos!
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto py-1">
+          <div className="flex items-center gap-2 overflow-x-auto py-1 min-w-0">
             {[
               { name: 'Mineiro_Raiz', avatar: '🤠', status: 'disponivel' },
               { name: 'Zeus_BR', avatar: '⚡', status: 'disponivel' },
@@ -534,7 +534,7 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
         </div>
 
         {/* Filter Pills & Search */}
-        <div className="shrink-0 mb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/90 p-2 sm:p-2.5 rounded-2xl border border-slate-800 shadow">
+        <div className="shrink-0 mb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 short:mb-2 short:p-1.5 bg-slate-900/90 p-2 sm:p-2.5 rounded-2xl border border-slate-800 shadow">
           {/* Category Tabs */}
           <div className="flex flex-wrap items-center gap-1">
             {[
@@ -548,7 +548,7 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 short:px-2 short:py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   selectedCategory === cat.id
                     ? 'bg-amber-500 text-slate-950 font-black shadow-md'
                     : 'bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800'
@@ -575,7 +575,7 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
             return (
               <div
                 key={game.id}
-                className={`rounded-2xl bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 ${visual.border} p-4 shadow-xl flex flex-col justify-between transition-all group`}
+                className={`rounded-2xl bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 ${visual.border} p-4 short:p-3 shadow-xl flex flex-col justify-between transition-all group`}
               >
                 <div className="space-y-3">
                   {/* Top card header */}

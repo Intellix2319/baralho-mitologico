@@ -298,23 +298,23 @@ export default function App() {
 
       {/* Top Header (shrink-0) - Hidden during gameplay to give maximum space to the table */}
       {(!isGameActive || activeTab !== 'play') && (
-        <header className="shrink-0 z-40 border-b border-amber-500/30 bg-[#0c0a1a]/95 backdrop-blur-md px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 shadow-2xl">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+        <header className="shrink-0 z-40 border-b border-amber-500/30 bg-[#0c0a1a]/95 backdrop-blur-md px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 short:px-2 short:py-1 shadow-2xl">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row short:flex-row items-center justify-between gap-3 short:gap-2">
           {/* Logo & Platform Brand */}
-          <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => setActiveTab('play')}>
+          <div className="flex items-center gap-3 short:gap-2 min-w-0 cursor-pointer select-none" onClick={() => setActiveTab('play')}>
             <div className="relative group">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/30 font-black text-xl border-2 border-amber-300 transform group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 short:w-8 short:h-8 short:text-base rounded-2xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/30 font-black text-xl border-2 border-amber-300 transform group-hover:scale-105 transition-transform">
                 ⚡
               </div>
               <div className="absolute -inset-1 rounded-2xl bg-amber-400/20 blur-sm -z-10 group-hover:bg-amber-400/40 transition-colors" />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-sm sm:text-base font-black tracking-tight bg-gradient-to-r from-amber-200 via-amber-300 to-amber-500 bg-clip-text text-transparent">
+                <h1 className="whitespace-nowrap truncate text-sm sm:text-base short:text-xs font-black tracking-tight bg-gradient-to-r from-amber-200 via-amber-300 to-amber-500 bg-clip-text text-transparent">
                   BARALHO DOS DEUSES SOMBRIOS
                 </h1>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold uppercase tracking-wider">
+                <span className="short:hidden text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold uppercase tracking-wider">
                   ARENA OFICIAL
                 </span>
               </div>
@@ -322,8 +322,8 @@ export default function App() {
           </div>
 
           {/* Desktop Navigation Tabs & Free Chips Button */}
-          <div className="flex items-center gap-2.5">
-            <nav className="hidden sm:flex items-center gap-1.5 bg-slate-950/90 p-1.5 rounded-2xl border border-amber-500/20 shadow-inner">
+          <div className="flex items-center gap-2.5 short:gap-1.5 shrink-0">
+            <nav className="hidden sm:flex items-center gap-1.5 short:gap-1 bg-slate-950/90 p-1.5 short:p-1 rounded-2xl border border-amber-500/20 shadow-inner">
               <button
                 onClick={() => {
                   playSound('click');
@@ -337,7 +337,7 @@ export default function App() {
                 }`}
               >
                 <Gamepad2 className="w-3.5 h-3.5" />
-                <span>Jogar Arena</span>
+                <span className={activeTab === 'play' ? '' : 'short:hidden'}>Jogar Arena</span>
               </button>
 
               <button
@@ -352,7 +352,7 @@ export default function App() {
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>Academia de Regras</span>
+                <span className={activeTab === 'academy' ? '' : 'short:hidden'}>Academia de Regras</span>
               </button>
 
               <button
@@ -367,7 +367,7 @@ export default function App() {
                 }`}
               >
                 <Users className="w-3.5 h-3.5" />
-                <span>Multijogador</span>
+                <span className={activeTab === 'multiplayer' ? '' : 'short:hidden'}>Multijogador</span>
               </button>
 
               <button
@@ -382,14 +382,14 @@ export default function App() {
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Coleção ({allCards.length})</span>
+                <span className={activeTab === 'catalog' ? '' : 'short:hidden'}>Coleção ({allCards.length})</span>
               </button>
             </nav>
 
             {/* Modo Leve (Low Power) Toggle Button */}
             <button
               onClick={toggleLowPowerMode}
-              className={`min-h-[44px] min-w-[44px] px-2.5 py-1.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-md active:scale-95 shrink-0 ${
+              className={`min-h-[44px] min-w-[44px] short:min-h-[36px] short:min-w-[36px] px-2.5 py-1.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-md active:scale-95 shrink-0 ${
                 isLowPowerMode
                   ? 'bg-emerald-500/25 border-emerald-400/80 text-emerald-300'
                   : 'bg-slate-950/90 hover:bg-slate-900 border-amber-500/30 text-slate-400 hover:text-white'
@@ -410,12 +410,12 @@ export default function App() {
                 playSound('click');
                 setIsChipsModalOpen(true);
               }}
-              className="min-h-[44px] flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-amber-600/30 hover:from-amber-500/30 hover:to-amber-600/40 border border-amber-500/50 px-3.5 py-1.5 rounded-xl text-xs font-bold text-amber-300 shadow-lg active:scale-95 transition-all cursor-pointer"
+              className="min-h-[44px] short:min-h-[36px] short:px-2 short:gap-1 flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-amber-600/30 hover:from-amber-500/30 hover:to-amber-600/40 border border-amber-500/50 px-3.5 py-1.5 rounded-xl text-xs font-bold text-amber-300 shadow-lg active:scale-95 transition-all cursor-pointer"
               title="Clique para pegar fichas 100% grátis"
             >
               <Coins className="w-4 h-4 text-amber-400 animate-pulse" />
-              <span>{chipsBalance.toLocaleString()} Fichas</span>
-              <span className="bg-amber-500 text-black px-1.5 py-0.2 rounded text-[10px] font-black uppercase">
+              <span>{chipsBalance.toLocaleString()}<span className="short:hidden"> Fichas</span></span>
+              <span className="short:hidden bg-amber-500 text-black px-1.5 py-0.2 rounded text-[10px] font-black uppercase">
                 +Grátis
               </span>
             </button>
@@ -423,7 +423,7 @@ export default function App() {
             {/* Fullscreen API Toggle Button for Mobile & Desktop */}
             <button
               onClick={toggleFullscreen}
-              className="w-9 h-9 min-w-[44px] min-h-[44px] sm:w-10 sm:h-10 rounded-xl bg-slate-950/90 hover:bg-slate-900 border border-amber-500/30 text-amber-300 flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95 shrink-0"
+              className="w-9 h-9 min-w-[44px] min-h-[44px] short:min-w-[36px] short:min-h-[36px] short:w-8 short:h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-950/90 hover:bg-slate-900 border border-amber-500/30 text-amber-300 flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95 shrink-0"
               title={isFullscreen ? 'Sair da Tela Cheia' : 'Entrar em Tela Cheia (Ocultar navegador)'}
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
