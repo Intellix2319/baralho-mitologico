@@ -1,4 +1,5 @@
 import React from 'react';
+import { CHIP_DATA } from './chipImages';
 
 export interface ChipInfo {
   value: number;
@@ -116,15 +117,15 @@ export const CHIP_PRESETS: Record<number, ChipInfo> = {
 
 // High-res WebP chip images (512x512) with transparent backgrounds
 export const CHIP_IMAGE_MAP: Record<number, string> = {
-  1: '/assets/chips/chip_1.webp',
-  5: '/assets/chips/chip_5.webp',
-  25: '/assets/chips/chip_25.webp',
-  50: '/assets/chips/chip_25.webp',
-  100: '/assets/chips/chip_100.webp',
-  500: '/assets/chips/chip_500.webp',
-  1000: '/assets/chips/chip_100.webp',
-  5000: '/assets/chips/chip_500.webp',
-  10000: '/assets/chips/chip_500.webp'
+  1: CHIP_DATA[1],
+  5: CHIP_DATA[5],
+  25: CHIP_DATA[25],
+  50: CHIP_DATA[25],
+  100: CHIP_DATA[100],
+  500: CHIP_DATA[500],
+  1000: CHIP_DATA[100],
+  5000: CHIP_DATA[500],
+  10000: CHIP_DATA[500]
 };
 
 // Immediate client-side in-memory preloading for zero-delay instant display
@@ -190,7 +191,7 @@ export const CasinoChip: React.FC<CasinoChipProps> = ({
 
   // Enhanced and enlarged sizes requested by user
   const sizeClasses = {
-    sm: 'w-11 h-11 sm:w-12 sm:h-12',
+    sm: 'w-11 h-11 sm:w-12 sm:h-12 short:w-9 short:h-9 tiny:w-8 tiny:h-8',
     md: 'w-14 h-14 sm:w-16 sm:h-16',
     lg: 'w-18 h-18 sm:w-20 sm:h-20',
     xl: 'w-24 h-24 sm:w-28 sm:h-28'

@@ -825,9 +825,9 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
   const toCall = Math.max(0, (currentBet || 0) - (playerCurrentBet || 0));
 
   return (
-    <div className="h-full max-h-full w-full max-w-7xl mx-auto flex flex-col justify-between p-2 select-none overflow-hidden gap-1.5">
+    <div className="h-full max-h-full w-full max-w-7xl mx-auto flex flex-col justify-between p-2 short:p-1 select-none overflow-hidden gap-1.5 short:gap-1">
       {/* Sleek Top Bar: Back to Game Hub & Table Info (No redundant Saldo sub-bar) */}
-      <div className="h-11 shrink-0 bg-slate-900/95 border border-amber-500/30 rounded-xl px-3 flex items-center justify-between shadow-lg">
+      <div className="h-11 short:h-8 tiny:h-7 shrink-0 bg-slate-900/95 border border-amber-500/30 rounded-xl px-3 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-3">
           {onBack && (
             <button
@@ -863,12 +863,12 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
       </div>
 
       {/* Main Poker Felt Table (Flexible height, fits 100% viewport without scrolling) */}
-      <div className="flex-1 min-h-0 relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#0c2e1f] via-[#082015] to-[#04120c] border-2 sm:border-3 border-amber-500/40 p-2 sm:p-3 shadow-2xl flex flex-col justify-between overflow-hidden">
+      <div className="flex-1 min-h-0 relative rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#0c2e1f] via-[#082015] to-[#04120c] border-2 sm:border-3 border-amber-500/40 p-2 sm:p-3 short:p-1.5 shadow-2xl flex flex-col justify-between short:flex-row short:items-center short:gap-2 overflow-hidden">
         {/* Table Felt Inner Oval Ring */}
-        <div className="absolute inset-x-4 top-3 bottom-3 border-2 border-dashed border-emerald-500/15 rounded-full pointer-events-none" />
+        <div className="absolute inset-x-4 top-3 bottom-3 short:inset-x-2 short:top-1.5 short:bottom-1.5 border-2 border-dashed border-emerald-500/15 rounded-full pointer-events-none" />
 
         {/* 1. Opponents Section (Arranged across the top of the table) */}
-        <div className="relative z-10 shrink-0 flex items-center justify-around gap-2 px-1">
+        <div className="relative z-10 shrink-0 flex items-center justify-around gap-2 px-1 short:flex-wrap short:content-center short:justify-center short:gap-x-1.5 short:gap-y-3 tiny:gap-y-2 short:px-0 short:w-[40%] tiny:w-[50%]">
           {aiPlayers.map((ai, index) => {
             const isFolded = ai.folded;
             return (
@@ -879,21 +879,21 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
                 }`}
               >
                 {/* AI Header Badge */}
-                <div className="flex items-center gap-1.5 bg-black/80 border border-emerald-500/40 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold text-emerald-200 shadow-md">
+                <div className="flex items-center gap-1.5 bg-black/80 border border-emerald-500/40 px-2 py-0.5 short:px-1.5 short:py-0 rounded-full text-[10px] sm:text-[11px] short:text-[9px] font-bold text-emerald-200 shadow-md">
                   <span className="text-xs">{ai.avatar}</span>
-                  <span className="truncate max-w-[70px] sm:max-w-[100px]">{ai.name.split(' ')[0]}</span>
-                  <span className="text-amber-400 font-mono hidden sm:inline">
+                  <span className="truncate max-w-[70px] sm:max-w-[100px] short:max-w-[56px]">{ai.name.split(' ')[0]}</span>
+                  <span className="text-amber-400 font-mono hidden sm:inline tiny:hidden">
                     ${ai.chips.toLocaleString()}
                   </span>
                 </div>
 
                 {/* AI Cards & Bet Badge */}
-                <div className="relative flex items-center gap-1 sm:gap-1.5 mt-1">
+                <div className="relative flex items-center gap-1 sm:gap-1.5 mt-1 short:mt-0.5">
                   {ai.hand.length > 0 ? (
                     ai.hand.map((c, i) => (
                       <div
                         key={i}
-                        className="relative h-18 sm:h-24 md:h-28 lg:h-32 aspect-[640/1120] rounded-lg sm:rounded-xl overflow-hidden border-2 border-emerald-500/60 shadow-xl bg-slate-950 transition-transform hover:scale-105"
+                        className="relative h-18 sm:h-24 md:h-28 lg:h-32 short:h-[14dvh] tiny:h-[11dvh] aspect-[640/1120] rounded-lg sm:rounded-xl overflow-hidden border-2 border-emerald-500/60 shadow-xl bg-slate-950 transition-transform hover:scale-105"
                       >
                         <img
                           src={
@@ -919,14 +919,14 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
                     ))
                   ) : (
                     <div className="flex gap-1 opacity-25">
-                      <div className="h-18 sm:h-24 md:h-28 lg:h-32 aspect-[640/1120] rounded-lg sm:rounded-xl border-2 border-dashed border-emerald-500" />
-                      <div className="h-18 sm:h-24 md:h-28 lg:h-32 aspect-[640/1120] rounded-lg sm:rounded-xl border-2 border-dashed border-emerald-500" />
+                      <div className="h-18 sm:h-24 md:h-28 lg:h-32 short:h-[14dvh] tiny:h-[11dvh] aspect-[640/1120] rounded-lg sm:rounded-xl border-2 border-dashed border-emerald-500" />
+                      <div className="h-18 sm:h-24 md:h-28 lg:h-32 short:h-[14dvh] tiny:h-[11dvh] aspect-[640/1120] rounded-lg sm:rounded-xl border-2 border-dashed border-emerald-500" />
                     </div>
                   )}
 
                   {/* AI Status / Action Pill */}
                   {ai.lastAction && (
-                    <div className="absolute -bottom-2.5 bg-slate-950/95 border border-amber-400/80 text-amber-300 px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-black uppercase shadow-lg tracking-wider whitespace-nowrap z-20">
+                    <div className="absolute -bottom-2.5 short:-bottom-1.5 bg-slate-950/95 border border-amber-400/80 text-amber-300 px-2 py-0.5 short:px-1 short:py-0 rounded text-[9px] sm:text-[10px] short:text-[8px] font-black uppercase shadow-lg tracking-wider whitespace-nowrap z-20">
                       {ai.lastAction}
                     </div>
                   )}
@@ -937,9 +937,9 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
         </div>
 
         {/* 2. Center Felt: Turn Banner, Message, Pot & ENLARGED Community Cards */}
-        <div className="relative z-10 flex-1 min-h-0 flex flex-col items-center justify-center py-0.5">
+        <div className="relative z-10 flex-1 min-h-0 min-w-0 flex flex-col items-center justify-center py-0.5 short:flex-row short:flex-wrap short:content-center short:justify-center short:gap-x-2 short:gap-y-1">
           {/* Active Turn Pill */}
-          <div className="h-6 flex items-center justify-center mb-1">
+          <div className="h-6 flex items-center justify-center mb-1 short:h-5 short:mb-0 short:order-1">
             {playerHand.length > 0 && round !== 'showdown' && (
               <div
                 className={`px-3 py-0.5 rounded-full text-[11px] font-black tracking-wide uppercase flex items-center gap-1.5 shadow-md ${
@@ -964,8 +964,8 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
           </div>
 
           {/* Top Status & Message Box (Safely above cards, never covered by player hand) */}
-          <div className="h-6 mb-1.5 flex items-center justify-center">
-            <div className="text-[11px] sm:text-xs font-bold text-slate-100 bg-black/90 px-3.5 py-0.5 rounded-full border border-slate-700 shadow-lg max-w-lg text-center truncate">
+          <div className="h-6 mb-1.5 flex items-center justify-center short:h-5 short:mb-0 short:order-3 short:basis-full min-w-0">
+            <div className="text-[11px] sm:text-xs font-bold text-slate-100 bg-black/90 px-3.5 py-0.5 rounded-full border border-slate-700 shadow-lg max-w-lg text-center truncate short:text-[10px] short:px-2 short:py-0 short:max-w-full">
               {winnerMessage ? (
                 <span className="text-amber-300 font-black animate-pulse">{winnerMessage}</span>
               ) : (
@@ -975,19 +975,19 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
           </div>
 
           {/* Pot Display */}
-          <div className="flex items-center gap-2 bg-black/85 border border-amber-400/70 px-4 py-0.5 rounded-full text-amber-300 font-mono font-black text-xs sm:text-sm shadow-xl mb-2">
+          <div className="flex items-center gap-2 bg-black/85 border border-amber-400/70 px-4 py-0.5 rounded-full text-amber-300 font-mono font-black text-xs sm:text-sm shadow-xl mb-2 short:mb-0 short:py-0 short:px-2.5 short:text-[11px] short:order-2">
             <Coins className="w-4 h-4 text-amber-400" />
             <span>Pote: ${(pot || 0).toLocaleString()}</span>
           </div>
 
           {/* ENLARGED Community Cards with Clear Rank & Suit Indicators */}
-          <div className="flex items-center gap-2 sm:gap-3 md:gap-3.5">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-3.5 short:gap-1 short:order-4 short:basis-full short:justify-center">
             {[0, 1, 2, 3, 4].map((idx) => {
               const card = communityCards[idx];
               return (
                 <div
                   key={idx}
-                  className="relative h-28 sm:h-36 md:h-44 aspect-[640/1120] rounded-xl border-2 sm:border-3 border-amber-500/60 bg-slate-950/95 shadow-2xl overflow-hidden flex items-center justify-center transform transition-transform hover:scale-102"
+                  className="relative h-28 sm:h-36 md:h-44 short:h-[32dvh] tiny:h-[27dvh] aspect-[640/1120] rounded-xl border-2 sm:border-3 border-amber-500/60 bg-slate-950/95 shadow-2xl overflow-hidden flex items-center justify-center transform transition-transform hover:scale-102"
                 >
                   {card && card.file ? (
                     <>
@@ -1000,7 +1000,7 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
                         className="w-full h-full object-cover rendering-pixelated"
                       />
                       {/* Prominent Corner Overlay Badge for Crystal Clarity */}
-                      <div className="absolute top-1 left-1 bg-black/85 px-1.5 py-0.5 rounded text-[11px] font-black flex items-center gap-1 shadow-md border border-amber-500/40">
+                      <div className="absolute top-1 left-1 short:top-0.5 short:left-0.5 bg-black/85 px-1.5 py-0.5 short:px-1 short:py-0 rounded text-[11px] short:text-[9px] font-black flex items-center gap-1 shadow-md border border-amber-500/40">
                         <span className="text-amber-300">{card.rank}</span>
                         <span style={{ color: card.color }}>{card.suitSymbol}</span>
                       </div>
@@ -1019,14 +1019,14 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
         </div>
 
         {/* 3. Player Section (Bottom - ENLARGED Hole Cards & Subtle Clean Hand Badge) */}
-        <div className="relative z-10 shrink-0 flex items-center justify-center pb-1 gap-4 sm:gap-6">
+        <div className="relative z-10 shrink-0 flex items-center justify-center pb-1 gap-4 sm:gap-6 short:pb-0 short:gap-2">
           {/* ENLARGED Player Hole Cards */}
           <div className="flex items-center gap-2 sm:gap-3">
             {playerHand.length > 0 ? (
               playerHand.map((c, i) => (
                 <div
                   key={i}
-                  className="relative h-32 sm:h-44 md:h-52 aspect-[640/1120] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-3 border-amber-400 shadow-2xl bg-slate-950 transform hover:-translate-y-2 transition-transform"
+                  className="relative h-32 sm:h-44 md:h-52 short:h-[32dvh] tiny:h-[27dvh] aspect-[640/1120] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-3 border-amber-400 shadow-2xl bg-slate-950 transform hover:-translate-y-2 transition-transform"
                 >
                   {c && c.file ? (
                     <>
@@ -1039,7 +1039,7 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
                         className="w-full h-full object-cover rendering-pixelated"
                       />
                       {/* High-visibility corner badge */}
-                      <div className="absolute top-1 left-1 bg-black/90 px-1.5 py-0.5 rounded text-xs sm:text-sm font-black flex items-center gap-1 shadow-md border border-amber-400/50">
+                      <div className="absolute top-1 left-1 short:top-0.5 short:left-0.5 bg-black/90 px-1.5 py-0.5 short:px-1 short:py-0 rounded text-xs sm:text-sm short:text-[10px] font-black flex items-center gap-1 shadow-md border border-amber-400/50">
                         <span className="text-amber-300">{c.rank}</span>
                         <span style={{ color: c.color }}>{c.suitSymbol}</span>
                       </div>
@@ -1049,10 +1049,10 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
               ))
             ) : (
               <div className="flex gap-2">
-                <div className="h-32 sm:h-44 md:h-52 aspect-[640/1120] rounded-xl border-2 border-dashed border-amber-500/40 flex items-center justify-center text-amber-500/40 text-base font-bold">
+                <div className="h-32 sm:h-44 md:h-52 short:h-[32dvh] tiny:h-[27dvh] aspect-[640/1120] rounded-xl border-2 border-dashed border-amber-500/40 flex items-center justify-center text-amber-500/40 text-base font-bold">
                   ?
                 </div>
-                <div className="h-32 sm:h-44 md:h-52 aspect-[640/1120] rounded-xl border-2 border-dashed border-amber-500/40 flex items-center justify-center text-amber-500/40 text-base font-bold">
+                <div className="h-32 sm:h-44 md:h-52 short:h-[32dvh] tiny:h-[27dvh] aspect-[640/1120] rounded-xl border-2 border-dashed border-amber-500/40 flex items-center justify-center text-amber-500/40 text-base font-bold">
                   ?
                 </div>
               </div>
@@ -1061,7 +1061,7 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
 
           {/* Subtle, Non-Overlapping Hand Strength Badge */}
           {playerHand.length > 0 && playerEval && (
-            <div className="hidden sm:flex flex-col justify-center bg-slate-950/90 border border-amber-500/40 px-3.5 py-2 rounded-2xl shadow-xl max-w-[200px]">
+            <div className="hidden sm:flex short:hidden flex-col justify-center bg-slate-950/90 border border-amber-500/40 px-3.5 py-2 rounded-2xl shadow-xl max-w-[200px]">
               <div className="text-[10px] text-amber-400/80 font-bold uppercase tracking-wider flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-amber-400" />
                 <span>Sua Combinação</span>
@@ -1078,7 +1078,7 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
       </div>
 
       {/* 4. Interactive Betting & Action Bar (Comfortable h-16 for enlarged chips) */}
-      <div className="h-16 shrink-0 bg-slate-900/95 border border-slate-800 rounded-xl px-3 flex items-center justify-between shadow-xl">
+      <div className="h-16 short:h-12 tiny:h-10 shrink-0 bg-slate-900/95 border border-slate-800 rounded-xl px-3 flex items-center justify-between shadow-xl">
         {playerHand.length === 0 || round === 'showdown' ? (
           <div className="flex items-center justify-between w-full">
             <div className="text-xs text-slate-400 hidden sm:block">
@@ -1106,7 +1106,7 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
             </div>
 
             {/* Mobile combination display if hidden on table */}
-            <div className="sm:hidden text-xs font-bold text-amber-300 truncate max-w-[120px]">
+            <div className="sm:hidden short:block text-xs font-bold text-amber-300 truncate max-w-[120px]">
               {playerEval?.rankName}
             </div>
 
@@ -1115,7 +1115,7 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
               <button
                 onClick={handleFold}
                 disabled={isAiThinking}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-red-300 font-bold text-xs border border-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
+                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-red-300 font-bold text-xs whitespace-nowrap short:px-2.5 short:text-[11px] border border-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Desistir (Fold)
               </button>
@@ -1124,7 +1124,7 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
                 <button
                   onClick={handleCheck}
                   disabled={isAiThinking}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs border border-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs whitespace-nowrap short:px-2.5 short:text-[11px] border border-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   Mesa (Check)
                 </button>
@@ -1132,7 +1132,7 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
                 <button
                   onClick={handleCall}
                   disabled={isAiThinking}
-                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md transition-colors disabled:opacity-50 cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs whitespace-nowrap short:px-2.5 short:text-[11px] shadow-md transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   Pagar ${toCall} (Call)
                 </button>
@@ -1141,7 +1141,7 @@ export const PokerGame: React.FC<PokerGameProps> = ({ playerCount = 6, onBack })
               <button
                 onClick={() => handleBetOrRaise(tableStakes.big)}
                 disabled={isAiThinking}
-                className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 cursor-pointer"
+                className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg whitespace-nowrap short:px-2.5 short:text-[11px] shadow-amber-500/20 transition-all disabled:opacity-50 cursor-pointer"
               >
                 Apostar +${tableStakes.big}
               </button>

@@ -307,7 +307,7 @@ export const BlackjackGame: React.FC<BlackjackGameProps> = ({ spotCount = 3, onB
   };
 
   return (
-    <div className="h-full max-h-full w-full max-w-6xl mx-auto flex flex-col justify-between p-2 select-none overflow-hidden gap-1.5">
+    <div className="h-full max-h-full short:h-auto short:max-h-none short:min-h-[540px] w-full max-w-6xl mx-auto flex flex-col justify-between p-2 select-none overflow-hidden gap-1.5">
       {/* Sleek Top Bar: Back to Game Hub & Table Info (No redundant Saldo sub-bar) */}
       <div className="h-11 shrink-0 bg-slate-900/95 border border-purple-500/30 rounded-xl px-3 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-3">

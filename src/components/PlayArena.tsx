@@ -648,7 +648,7 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
 
   // 2. ACTIVE GAME VIEW (FULL SCREEN WITHOUT HEADER DISTRACTIONS!)
   return (
-    <div className="flex-1 min-h-0 flex flex-col overflow-hidden w-full h-full relative">
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden short:overflow-y-auto overscroll-contain touch-pan-y w-full h-full relative">
       {/* Online Room Status Bar when playing Online */}
       {onlineSession?.mode === 'online' && (
         <div className="shrink-0 bg-emerald-950/90 border-b border-emerald-500/40 px-3 py-1.5 flex items-center justify-between text-xs z-30">

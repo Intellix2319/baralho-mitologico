@@ -194,7 +194,7 @@ export const GenericCardGameArena: React.FC<GenericCardGameArenaProps> = ({
   };
 
   return (
-    <div className="h-full max-h-full flex flex-col justify-between overflow-hidden select-none max-w-7xl mx-auto w-full px-1 sm:px-2 py-1 gap-1.5">
+    <div className="h-full max-h-full short:h-auto short:max-h-none short:min-h-[540px] flex flex-col justify-between overflow-hidden select-none max-w-7xl mx-auto w-full px-1 sm:px-2 py-1 gap-1.5">
       {/* Top Header Bar */}
       <div className="shrink-0 bg-slate-900/95 border border-amber-500/30 rounded-2xl px-3 py-1 shadow-xl flex items-center justify-between gap-2 min-h-[44px]">
         <div className="flex items-center gap-3">

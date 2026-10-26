@@ -2,6 +2,8 @@
 
 /* Celular deitado (paisagem): tela baixa. Use "short:" nas classes para compactar o layout. */
 @custom-variant short (@media (max-height: 520px));
+/* Tela MUITO baixa (celular deitado com barras do navegador abertas). Vem depois de "short" para vencer. */
+@custom-variant tiny (@media (max-height: 280px));
 
 @layer utilities {
   .rendering-pixelated {

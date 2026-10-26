@@ -50,18 +50,18 @@ export const Academy: React.FC<AcademyProps> = ({ onSelectGameToPlay }) => {
   };
 
   return (
-    <div className="h-full max-h-full flex flex-col overflow-hidden max-w-7xl mx-auto w-full px-2 sm:px-6 py-2 sm:py-3 select-none">
+    <div className="h-full max-h-full flex flex-col overflow-y-auto overscroll-contain md:overflow-hidden max-w-7xl mx-auto w-full px-2 sm:px-6 py-2 sm:py-3 short:py-1 select-none">
       {/* Top Banner: Direct & Clean (shrink-0) */}
-      <div className="shrink-0 mb-3 rounded-2xl bg-gradient-to-r from-[#1a1202] via-[#0d0918] to-[#120a21] border border-amber-500/30 p-3 sm:p-4 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      <div className="shrink-0 mb-3 short:hidden rounded-2xl bg-gradient-to-r from-[#1a1202] via-[#0d0918] to-[#120a21] border border-amber-500/30 p-3 sm:p-4 short:p-2 shadow-xl flex flex-col md:flex-row short:flex-row items-start md:items-center justify-between gap-3 short:gap-2">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider mb-1">
+          <div className="short:hidden inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider mb-1">
             <BookOpen className="w-3 h-3" />
             <span>Guia Rápido & Prático de Regras</span>
           </div>
           <h1 className="text-base sm:text-xl font-black text-amber-100">
             Aprenda as Regras em Menos de 1 Minuto
           </h1>
-          <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5 max-w-xl line-clamp-1 sm:line-clamp-none">
+          <p className="short:hidden text-[11px] sm:text-xs text-slate-300 mt-0.5 max-w-xl line-clamp-1 sm:line-clamp-none">
             Sem termos complicados: veja como ganhar, a ordem das cartas mais fortes e as jogadas fundamentais de cada modalidade.
           </p>
         </div>
@@ -76,9 +76,9 @@ export const Academy: React.FC<AcademyProps> = ({ onSelectGameToPlay }) => {
       </div>
 
       {/* Main Grid: Game Selection Bar + Practical Content */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 overflow-hidden">
+      <div className="shrink-0 md:shrink md:flex-1 md:min-h-0 grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 short:gap-2 md:overflow-hidden">
         {/* Left Column: Quick Game List */}
-        <div className="lg:col-span-4 flex flex-col min-h-0 overflow-hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-2.5 sm:p-3 shadow-lg">
+        <div className="md:col-span-4 flex flex-col min-h-0 max-h-60 md:max-h-none overflow-hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-2.5 sm:p-3 shadow-lg">
           <div className="shrink-0 space-y-2 mb-2">
             {/* Search */}
             <div className="relative">
@@ -111,7 +111,7 @@ export const Academy: React.FC<AcademyProps> = ({ onSelectGameToPlay }) => {
           </div>
 
           {/* Games list cards - Independent scrolling */}
-          <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1.5">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pr-1 space-y-1.5">
             {filteredGames.map((game) => {
               const isSelected = game.id === activeGame.id;
               return (
@@ -145,9 +145,9 @@ export const Academy: React.FC<AcademyProps> = ({ onSelectGameToPlay }) => {
         </div>
 
         {/* Right Column: Visual Rule Sheet with INTERNAL SCROLL ONLY on explanation */}
-        <div className="lg:col-span-8 flex flex-col min-h-0 overflow-hidden bg-slate-900/95 border-2 border-amber-500/40 rounded-2xl shadow-2xl">
+        <div className="md:col-span-8 flex flex-col md:min-h-0 md:overflow-hidden bg-slate-900/95 border-2 border-amber-500/40 rounded-2xl shadow-2xl">
           {/* Header of Active Game (shrink-0) */}
-          <div className="shrink-0 p-3 sm:p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-950/60">
+          <div className="shrink-0 p-3 sm:p-4 short:p-2 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-950/60">
             <div>
               <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
                 {activeGame.category}
@@ -157,13 +157,20 @@ export const Academy: React.FC<AcademyProps> = ({ onSelectGameToPlay }) => {
               </h2>
             </div>
 
-            <div className="text-xs text-slate-400 font-medium">
+            <div className="text-xs text-slate-400 font-medium short:hidden">
               {activeGame.deckType}
             </div>
+            <button
+              onClick={() => onSelectGameToPlay(activeGame.id)}
+              className="hidden short:flex px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs items-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0 active:scale-95"
+            >
+              <PlayCircle className="w-4 h-4" />
+              <span>Jogar {activeGame.title.split(' ')[0]}</span>
+            </button>
           </div>
 
           {/* DEDICATED SCROLLABLE EXPLANATION CONTENT AREA */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-3.5 sm:p-5 space-y-4">
+          <div className="md:flex-1 md:min-h-0 md:overflow-y-auto md:overscroll-contain md:touch-pan-y p-3.5 sm:p-5 short:p-2.5 space-y-4 short:space-y-2.5">
             {/* Objective in 1 clean box */}
             <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-start gap-3">
               <Zap className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
