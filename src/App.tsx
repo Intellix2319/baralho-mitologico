@@ -1,3 +1,5 @@
+import { lazyWithRetry, isChunkError, recoverFromStaleBuild } from './lazyWithRetry';
+import { useMobileFullscreen, isTouchPhone } from './useMobileFullscreen';
 import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useOnlineRoom } from './online/room';
 import rawCardsData from './cards_data.json';
@@ -30,22 +32,22 @@ import {
 } from 'lucide-react';
 
 // Lazy loaded views and heavy modals for maximum mobile performance and low memory footprint
-const Academy = React.lazy(() =>
+const Academy = lazyWithRetry(() =>
   import('./components/Academy').then((m) => ({ default: m.Academy }))
 );
-const PlayArena = React.lazy(() =>
+const PlayArena = lazyWithRetry(() =>
   import('./components/PlayArena').then((m) => ({ default: m.PlayArena }))
 );
-const MultiplayerLobby = React.lazy(() =>
+const MultiplayerLobby = lazyWithRetry(() =>
   import('./components/MultiplayerLobby').then((m) => ({ default: m.MultiplayerLobby }))
 );
-const DeckManager = React.lazy(() =>
+const DeckManager = lazyWithRetry(() =>
   import('./components/DeckManager').then((m) => ({ default: m.DeckManager }))
 );
-const TabletopSimulator = React.lazy(() =>
+const TabletopSimulator = lazyWithRetry(() =>
   import('./components/TabletopSimulator').then((m) => ({ default: m.TabletopSimulator }))
 );
-const ChipsModal = React.lazy(() =>
+const ChipsModal = lazyWithRetry(() =>
   import('./components/ChipsModal').then((m) => ({ default: m.ChipsModal }))
 );
 
@@ -89,6 +91,13 @@ class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary trapped error:', error, errorInfo);
+    // Arquivo velho/ausente (comum no app instalado): limpa o cache e recarrega sozinho 1 vez
+    try {
+      if (isChunkError(error) && !sessionStorage.getItem('chunk_retry')) {
+        sessionStorage.setItem('chunk_retry', '1');
+        recoverFromStaleBuild();
+      }
+    } catch { /* ignora */ }
   }
 
   render() {
@@ -101,6 +110,11 @@ class ErrorBoundary extends React.Component<
             <p className="text-xs text-slate-300">
               A partida foi estabilizada com sucesso. Suas fichas foram salvas integralmente.
             </p>
+            <pre className="text-[10px] text-red-300 text-left whitespace-pre-wrap break-words max-h-32 overflow-auto bg-black/40 rounded p-2 select-text">
+              {String(this.state.error?.message || this.state.error)}
+              {'\n'}
+              {String(this.state.error?.stack || '').split('\n').slice(0, 4).join('\n')}
+            </pre>
             <button
               onClick={() => {
                 this.setState({ hasError: false, error: null });
@@ -137,23 +151,42 @@ export default function App() {
     }
   });
 
+  // Lê o saldo guardado (fonte da verdade) e atualiza a tela
+  const readStoredChips = (): number | null => {
+    try {
+      const saved = localStorage.getItem('olympus_poker_chips');
+      const val = saved ? parseInt(saved, 10) : NaN;
+      return Number.isFinite(val) && val >= 0 ? val : null;
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
     const handleSync = () => {
-      try {
-        const saved = localStorage.getItem('olympus_poker_chips');
-        if (saved) setChipsBalance(parseInt(saved, 10));
-      } catch (e) {
-        console.error(e);
-      }
+      const val = readStoredChips();
+      if (val !== null) setChipsBalance(val);
     };
     window.addEventListener('olympus_chips_updated', handleSync);
-    return () => window.removeEventListener('olympus_chips_updated', handleSync);
+    window.addEventListener('storage', handleSync); // outra aba mudou o saldo
+    window.addEventListener('focus', handleSync); // voltou para esta aba
+    return () => {
+      window.removeEventListener('olympus_chips_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('focus', handleSync);
+    };
   }, []);
 
   const handleAddChips = (amount: number) => {
-    const next = chipsBalance + amount;
+    // Soma em cima do saldo guardado (e não do valor da tela, que pode estar atrasado)
+    const base = readStoredChips() ?? chipsBalance;
+    const next = base + amount;
     setChipsBalance(next);
-    localStorage.setItem('olympus_poker_chips', next.toString());
+    try {
+      localStorage.setItem('olympus_poker_chips', next.toString());
+    } catch (e) {
+      console.error(e);
+    }
     window.dispatchEvent(new Event('olympus_chips_updated'));
   };
 
@@ -288,6 +321,10 @@ export default function App() {
       return next;
     });
   };
+
+  // Celular: tela cheia automática no 1º toque (sem botão e sem permissão)
+  useMobileFullscreen();
+  const isPhone = isTouchPhone();
 
   // Fullscreen API toggle
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -453,7 +490,8 @@ export default function App() {
               </span>
             </button>
 
-            {/* Fullscreen API Toggle Button for Mobile & Desktop */}
+            {/* Botão de tela cheia: só no computador (no celular é automática) */}
+            {!isPhone && (
             <button
               onClick={toggleFullscreen}
               className="w-9 h-9 min-w-[44px] min-h-[44px] short:min-w-[36px] short:min-h-[36px] short:w-8 short:h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-950/90 hover:bg-slate-900 border border-amber-500/30 text-amber-300 flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95 shrink-0"
@@ -461,6 +499,7 @@ export default function App() {
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
+            )}
           </div>
         </div>
       </header>

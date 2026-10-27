@@ -1,3 +1,4 @@
+import { lazyWithRetry, isChunkError, recoverFromStaleBuild } from '../lazyWithRetry';
 import React, { useState, useMemo, Suspense } from 'react';
 import { TrucoVariant } from './games/TrucoGame';
 import { useOnlineRoom } from '../online/room';
@@ -5,31 +6,31 @@ import { GAME_RULES_DATABASE } from '../data/gameRulesData';
 import { playSound } from '../utils/audio';
 
 // Lazy loaded games to minimize initial bundle footprint and load only on demand
-const PokerGame = React.lazy(() =>
+const PokerGame = lazyWithRetry(() =>
   import('./games/PokerGame').then((m) => ({ default: m.PokerGame }))
 );
-const BlackjackGame = React.lazy(() =>
+const BlackjackGame = lazyWithRetry(() =>
   import('./games/BlackjackGame').then((m) => ({ default: m.BlackjackGame }))
 );
-const TrucoGame = React.lazy(() =>
+const TrucoGame = lazyWithRetry(() =>
   import('./games/TrucoGame').then((m) => ({ default: m.TrucoGame }))
 );
-const SolitaireGame = React.lazy(() =>
+const SolitaireGame = lazyWithRetry(() =>
   import('./games/SolitaireGame').then((m) => ({ default: m.SolitaireGame }))
 );
-const TrucoOnline = React.lazy(() =>
+const TrucoOnline = lazyWithRetry(() =>
   import('./games/TrucoOnline').then((m) => ({ default: m.TrucoOnline }))
 );
-const PokerOnline = React.lazy(() =>
+const PokerOnline = lazyWithRetry(() =>
   import('./games/PokerOnline').then((m) => ({ default: m.PokerOnline }))
 );
-const BlackjackOnline = React.lazy(() =>
+const BlackjackOnline = lazyWithRetry(() =>
   import('./games/BlackjackOnline').then((m) => ({ default: m.BlackjackOnline }))
 );
-const GenericCardGameArena = React.lazy(() =>
+const GenericCardGameArena = lazyWithRetry(() =>
   import('./games/GenericCardGameArena').then((m) => ({ default: m.GenericCardGameArena }))
 );
-const TabletopSimulator = React.lazy(() =>
+const TabletopSimulator = lazyWithRetry(() =>
   import('./TabletopSimulator').then((m) => ({ default: m.TabletopSimulator }))
 );
 
@@ -773,3 +774,4 @@ export const PlayArena: React.FC<PlayArenaProps> = ({
     </div>
   );
 };
+
